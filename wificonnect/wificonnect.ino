@@ -26,8 +26,8 @@ void setup() {
   pinMode(output5, OUTPUT);
   pinMode(output4, OUTPUT);
   // Set outputs to LOW
-  digitalWrite(output5, LOW);
-  digitalWrite(output4, LOW);
+  digitalWrite(output5, HIGH);
+  digitalWrite(output4, HIGH);
 
   // Connect to Wi-Fi network with SSID and password
   Serial.print("Connecting to ");
@@ -72,19 +72,19 @@ void loop(){
             if (header.indexOf("GET /5/on") >= 0) {
               Serial.println("GPIO 5 on");
               output5State = "on";
-              digitalWrite(output5, HIGH);
+              digitalWrite(output5, LOW);
             } else if (header.indexOf("GET /5/off") >= 0) {
               Serial.println("GPIO 5 off");
               output5State = "off";
-              digitalWrite(output5, LOW);
+              digitalWrite(output5, HIGH);
             } else if (header.indexOf("GET /4/on") >= 0) {
               Serial.println("GPIO 4 on");
               output4State = "on";
-              digitalWrite(output4, HIGH);
+              digitalWrite(output4, LOW);
             } else if (header.indexOf("GET /4/off") >= 0) {
               Serial.println("GPIO 4 off");
               output4State = "off";
-              digitalWrite(output4, LOW);
+              digitalWrite(output4, HIGH);
             }
             
             // Display the HTML web page
