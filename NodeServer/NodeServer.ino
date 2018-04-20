@@ -19,7 +19,7 @@ const int status2 = 12;
 const int output = 4;
 const int output2 = 5;
 
-bool status[2] = {false, false};
+bool status[2] = {false, false}; 
 
 void root(){
   server.send(200, "text/html", "<h1>Welcome!</h1>");
@@ -112,6 +112,20 @@ void start() {
     server.on("/2/on",[]() {
       status[1] = true;
       digitalWrite(output2, LOW);
+      server.send(200, "application/json", "{\"success\":\"success\"}");
+    });
+    server.on("/on",[]() {
+      status[0] = true;
+      status[1] = true;
+      digitalWrite(output, LOW);
+      digitalWrite(output2, LOW);
+      server.send(200, "application/json", "{\"success\":\"success\"}");
+    });
+    server.on("/off",[]() {
+      status[0] = false;
+      status[1] = false;
+      digitalWrite(output, HIGH);
+      digitalWrite(output2, HIGH);
       server.send(200, "application/json", "{\"success\":\"success\"}");
     });
     server.on("/2/off",[]() {
@@ -273,4 +287,7 @@ void setup() {
 
 void loop(){
   server.handleClient();
+  if(WiFi.status() != WL_CONNECTED) {
+    setupMode();
+  }
 }
