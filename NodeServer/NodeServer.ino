@@ -102,36 +102,36 @@ void start() {
     server.on("/1/on",[]() {
       status[0] = true;
       digitalWrite(output, LOW);
-      server.send(200, "application/json", "{\"success\":\"success\"}");
+      server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
     });
     server.on("/1/off",[]() {
       status[0] = false;
       digitalWrite(output, HIGH);
-      server.send(200, "application/json", "{\"success\":\"success\"}");
+      server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
     });
     server.on("/2/on",[]() {
       status[1] = true;
       digitalWrite(output2, LOW);
-      server.send(200, "application/json", "{\"success\":\"success\"}");
+      server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
     });
     server.on("/on",[]() {
       status[0] = true;
       status[1] = true;
       digitalWrite(output, LOW);
       digitalWrite(output2, LOW);
-      server.send(200, "application/json", "{\"success\":\"success\"}");
+      server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
     });
     server.on("/off",[]() {
       status[0] = false;
       status[1] = false;
       digitalWrite(output, HIGH);
       digitalWrite(output2, HIGH);
-      server.send(200, "application/json", "{\"success\":\"success\"}");
+      server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
     });
     server.on("/2/off",[]() {
       status[1] = false;
       digitalWrite(output2, HIGH);
-      server.send(200, "application/json", "{\"success\":\"success\"}");
+      server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
     });
     server.on("/status", []() {
       server.send(200, "application/json", "{ \"status1\": "+ String(status[0]) + ", \"status2\": " + String(status[1]) + " }");
@@ -287,7 +287,7 @@ void setup() {
 
 void loop(){
   server.handleClient();
-  if(WiFi.status() != WL_CONNECTED) {
-    setupMode();
-  }
+  //if(WiFi.status() != WL_CONNECTED) {
+  //  setupMode();
+  //}
 }
