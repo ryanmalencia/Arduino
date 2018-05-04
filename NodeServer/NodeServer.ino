@@ -11,6 +11,8 @@ ESP8266WebServer server(80);
 // Variable to store the HTTP request
 String header;
 
+byte id = 0;
+
 String hostname = "ESPtwo";
 
 // Assign output variables to GPIO pins
@@ -45,6 +47,7 @@ void setCreds() {
   for(int i = 0; i < thename.length(); ++i){
     EEPROM.write(64+i, thename[i]);
   }
+  EEPROM.write(95, id);
   EEPROM.commit();
 }
 
@@ -66,13 +69,13 @@ void setupMode() {
   server.on("/", root);
   server.on("/valid",sendValid);
   server.on("/set",[](){
-    String id = server.arg("ssid");
+    String ssid = server.arg("ssid");
     String pass = server.arg("pass");
     String thename = server.arg("name");
-    if(id.length() > 0 && pass.length() > 0){
+    if(ssid.length() > 0 && pass.length() > 0){
        for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
-       for (int i = 0; i < id.length(); ++i){
-         EEPROM.write(i, id[i]);
+       for (int i = 0; i < ssid.length(); ++i){
+         EEPROM.write(i, ssid[i]);
        }
       
        for(int i = 0; i < pass.length(); ++i){
@@ -82,6 +85,7 @@ void setupMode() {
        for(int i = 0; i < thename.length(); ++i){
          EEPROM.write(64+i, thename[i]);
        }
+       EEPROM.write(95, id);
        EEPROM.commit();
     }
     server.send(200, "application/json", "{\"success\":\"success\"}");
@@ -164,7 +168,7 @@ void startServer() {
   for(int i = 64; i < 92; ++i){
     savedname += char(EEPROM.read(i));
   }
-
+  id = byte(EEPROM.read(95));
   Serial.print("Connecting to ");
   Serial.println(savedssid);
   
@@ -208,6 +212,7 @@ void setup() {
     for(int i = 64; i < 92; ++i){
       savedname += char(EEPROM.read(i));
     }
+    id = byte(EEPROM.read(95));
   }
   Serial.println(savedpass);
   Serial.println(savedname);
@@ -259,13 +264,17 @@ void setup() {
     server.on("/", root);
     server.on("/valid",sendValid);
     server.on("/set",[](){
-      String id = server.arg("ssid");
+      String ssid = server.arg("ssid");
       String pass = server.arg("pass");
       String thename = server.arg("name");
-      if(id.length() > 0 && pass.length() > 0){
+      String temp = server.arg("id");
+      char *ptr;
+      id = strtol(temp.c_str(), &ptr, 10);
+      Serial.print("The id is: " + id);
+      if(ssid.length() > 0 && pass.length() > 0){
          for (int i = 0; i < 96; ++i) { EEPROM.write(i, 0); }
-         for (int i = 0; i < id.length(); ++i){
-           EEPROM.write(i, id[i]);
+         for (int i = 0; i < ssid.length(); ++i){
+           EEPROM.write(i, ssid[i]);
          }
         
          for(int i = 0; i < pass.length(); ++i){
@@ -275,6 +284,7 @@ void setup() {
          for(int i = 0; i < thename.length(); ++i){
            EEPROM.write(64+i, thename[i]);
          }
+         EEPROM.write(95, id);
          EEPROM.commit();
       }
       server.send(200, "application/json", "{\"success\":\"success\"}");
