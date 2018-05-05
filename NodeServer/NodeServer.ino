@@ -15,6 +15,10 @@ byte id = 0;
 
 String hostname = "ESPtwo";
 
+WiFiClient client;
+IPAddress webserver(10,0,0,136);
+int port = 3000;
+
 // Assign output variables to GPIO pins
 const int status1 = 14;
 const int status2 = 12;
@@ -190,6 +194,62 @@ void startServer() {
   server.begin();
 }
 
+String sendRequest(String type, String httpcall, String thedata) {
+  if(client.connect(webserver, port)) {
+      client.println(type + " " + httpcall + " HTTP/1.1");
+      client.println("Host: 10.0.0.136");
+      client.println("Accept: */*");
+      client.println("Connection: keep-alive");
+      client.println("Content-Type: application/json");
+      client.print("Content-Length: ");
+      Serial.println(thedata);
+      client.println(thedata.length());
+      client.println();
+      client.println(thedata);
+      delay(1500);
+    }
+    String line = "";
+    while(client.available()) {
+      line = client.readStringUntil('\n');
+      line = client.readStringUntil('\r');
+    }
+    if(client.connected()) {
+      client.stop();
+    }
+    return line;
+}
+
+String sendAddRequest(String savedname) {
+  String thedata =  "{\"Name\":\"";
+  thedata += savedname;
+  thedata += "\",\"IP\":\"";
+  thedata += WiFi.localIP().toString();
+  thedata += "\"}";
+  if(client.connect(webserver, port)) {
+      client.println("PUT /api/plug/add/ HTTP/1.1");
+      client.println("Host: 10.0.0.136");
+      client.println("Accept: */*");
+      client.println("Connection: keep-alive");
+      client.println("Content-Type: application/json");
+      client.print("Content-Length: ");
+      Serial.println(thedata);
+      client.println(thedata.length());
+      client.println();
+      client.println(thedata);
+      delay(1500);
+    }
+    String line = "";
+    while(client.available()) {
+      line = client.readStringUntil('\n');
+      line = client.readStringUntil('\r');
+    }
+    if(client.connected()) {
+      client.stop();
+    }
+    return line;
+}
+
+
 void setup() {
   bool ap = true;
   String savedssid = "";
@@ -199,6 +259,9 @@ void setup() {
   EEPROM.begin(512);
   //setCreds();
 
+  EEPROM.write(95, 37);
+  EEPROM.commit();
+
   for(int i = 0; i < 32; ++i)
   {
     savedssid += char(EEPROM.read(i));
@@ -207,15 +270,24 @@ void setup() {
   if(savedssid.length() > 1 && savedssid[0] != 0){
     ap = false;
     for (int i = 32; i < 64; ++i){
-      savedpass += char(EEPROM.read(i));
+      char t = char(EEPROM.read(i));
+      if(t == '\0'){
+        break;
+      }
+      savedpass += t;
     }
     for(int i = 64; i < 92; ++i){
-      savedname += char(EEPROM.read(i));
+      char t = char(EEPROM.read(i));
+      if(t == '\0'){
+        break;
+      }
+      savedname += t;
     }
     id = byte(EEPROM.read(95));
   }
   Serial.println(savedpass);
   Serial.println(savedname);
+  Serial.println(id);
   // Initialize the output variables as outputs
   pinMode(output, OUTPUT);
   pinMode(output2, OUTPUT);
@@ -252,6 +324,17 @@ void setup() {
     Serial.println("WiFi connected.");
     Serial.println("IP address: ");
     Serial.println(WiFi.localIP());
+    String localip = WiFi.localIP().toString();
+    String call = "/api/plug/getid?IP="+localip;
+    String tempid = sendRequest("GET",call, "");
+    Serial.print(tempid);
+    if(tempid == "0") {
+      String newid = sendAddRequest(savedname);
+      char *ptr;
+      id = strtol(newid.c_str(), &ptr, 10);
+      Serial.print("new id: ");
+      Serial.println(id);
+    }
     start();
   }
   startAP:
